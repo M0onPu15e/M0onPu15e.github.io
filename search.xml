@@ -179,31 +179,6 @@
     
     
     <entry>
-      <title>tomcat架构</title>
-      <link href="/2025/02/23/tomcat%E6%9E%B6%E6%9E%84%E8%AF%A6%E8%A7%A3/"/>
-      <url>/2025/02/23/tomcat%E6%9E%B6%E6%9E%84%E8%AF%A6%E8%A7%A3/</url>
-      
-        <content type="html"><![CDATA[<h2 id="Tomcat架构"><a href="#Tomcat架构" class="headerlink" title="Tomcat架构"></a>Tomcat架构</h2><p><img src="/./../img/ma/Snipaste_2025-02-18_17-06-58.png" alt="Snipaste_2025-02-18_17-06-58"></p><p>可以看到Tomcat Server大致可以分为三个组件，Service、Connector、Container</p><h3 id="service"><a href="#service" class="headerlink" title="service"></a>service</h3><p><strong>Service</strong> 是 Tomcat 的一个主要组件，负责组织和管理 <strong>Connector</strong> 和 <strong>Container</strong> 的工作。一个 <strong>Service</strong> 可以包含多个 <strong>Connector</strong> 和 <strong>Container</strong>。它的作用是将所有相关的资源和功能组合在一起，确保 Tomcat 在处理请求时能够高效地协同工作。</p><h3 id="Connector（连接器）"><a href="#Connector（连接器）" class="headerlink" title="Connector（连接器）"></a>Connector（连接器）</h3><p><strong>Connector</strong> 负责接收来自客户端（如浏览器）的请求，并将这些请求传递给 <strong>Container</strong> 进行处理。它处理网络协议（如 HTTP、HTTPS）和客户端与服务器之间的连接。</p><h3 id="Container（容器）"><a href="#Container（容器）" class="headerlink" title="Container（容器）"></a><strong>Container（容器）</strong></h3><p><strong>Container</strong> 是 Tomcat 的核心，负责实际处理 HTTP 请求的业务逻辑。包含四种子容器：<code>Engine</code>、<code>Host</code>、<code>Context</code>和<code>Wrapper</code>其中，一个Container对应一个Engine，一个Engine可以包含多个Host，一个Host可以包含多个Context，Context又包含多个Wrapper，各子容器的功能如下</p><h4 id="Engine"><a href="#Engine" class="headerlink" title="Engine"></a>Engine</h4><p><strong>Engine</strong> 是 <strong>Container</strong> 中的最顶层组件，负责处理所有的请求。它是 Tomcat 中的请求分发器，能够协调和管理所有的 <strong>Host</strong></p><h4 id="Host（主机）"><a href="#Host（主机）" class="headerlink" title="Host（主机）"></a>Host（主机）</h4><p><strong>Host</strong> 代表一个虚拟主机。一个 <strong>Host</strong> 通常对应一个域名或一个 IP 地址，它处理和管理特定的 Web 应用程序（通常对应于一个或多个网站）。每个 <strong>Host</strong> 可以包含多个 <strong>Context</strong>，每个 <strong>Context</strong> 对应一个 Web 应用。</p><h4 id="Context（上下文）"><a href="#Context（上下文）" class="headerlink" title="Context（上下文）"></a>Context（上下文）</h4><p><strong>Context</strong> 代表一个 Web 应用，是 Tomcat 中的一个应用级容器。一个 <strong>Context</strong> 通常对应一个单独的 Web 应用，它可以包含多个 Servlet、JSP 文件、HTML 页面等内容。同一个Host里面不同的Context，其contextPath必须不同，默认Context的contextPath为空格(“”)或斜杠(&#x2F;)</p><p>下面找一个Tomcat的文件目录对照一下，如下图所示：</p><p><img src="/./../img/ma/Snipaste_2025-02-18_17-28-29.png" alt="Snipaste_2025-02-18_17-28-29"></p><p>Context和Host的区别是Context表示一个应用，我们的Tomcat中默认的配置下webapps下的每一个文件夹目录都是一个Context，其中ROOT目录中存放着主应用，其他目录存放着子应用，而整个webapps就是一个Host站点。</p><h4 id="Wrapper（封装器）"><a href="#Wrapper（封装器）" class="headerlink" title="Wrapper（封装器）"></a>Wrapper（封装器）</h4><p><strong>Wrapper</strong> 是 <strong>Container</strong> 中的一个组件，一个<strong>Container</strong> 可以对应多个wrapper。它负责封装一个 <strong>Servlet</strong>。每个 <strong>Wrapper</strong> 对应一个 Servlet，它管理该 Servlet 的生命周期（初始化、请求处理、销毁）。<strong>Wrapper</strong> 是 <strong>Context</strong> 中的一个重要组成部分，它决定了 <strong>Servlet</strong> 如何在 Tomcat 中被加载和执行。</p><p>可以用一张图来表示请求在Container中的解析过程</p><p><img src="/./../img/ma/image-20250218181420354.png" alt="image-20250218181420354"></p><p>当访问 <code>https://manage.xxx.com:8080/user/list</code> 时，Tomcat 会按照以下流程处理请求：</p><ol><li><strong>请求接收：</strong> 客户端通过 HTTPS 协议向 Tomcat 的 8080 端口发送请求。</li><li><strong>Connector 处理：</strong> Tomcat 的 <code>Connector</code> 组件接收请求，并将其转换为内部的 <code>Request</code> 对象。</li><li><strong>Engine 路由：</strong> <code>Engine</code> 组件根据请求的主机名（<code>manage.xxx.com</code>）确定目标 <code>Host</code>。</li><li><strong>Host 路由：</strong> <code>Host</code> 组件根据请求的路径（<code>/user/list</code>）确定目标 <code>Context</code>。</li><li><strong>Context 路由：</strong> <code>Context</code> 组件根据请求的路径确定目标 <code>Wrapper</code>。</li><li><strong>Wrapper 调用 Servlet：</strong> <code>Wrapper</code> 调用其封装的 <code>Servlet</code> 的 <code>service()</code> 方法，处理请求并生成响应。</li><li><strong>响应返回：</strong> 生成的响应通过上述层次返回给客户端。</li></ol>]]></content>
-      
-      
-      <categories>
-          
-          <category> -代码审计 </category>
-          
-      </categories>
-      
-      
-        <tags>
-            
-            <tag> 标签2 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>三种Context的联系与区别</title>
       <link href="/2025/02/23/%E4%B8%89%E7%A7%8DContext%E7%9A%84%E8%81%94%E7%B3%BB%E4%B8%8E%E5%8C%BA%E5%88%AB/"/>
       <url>/2025/02/23/%E4%B8%89%E7%A7%8DContext%E7%9A%84%E8%81%94%E7%B3%BB%E4%B8%8E%E5%8C%BA%E5%88%AB/</url>
@@ -221,6 +196,31 @@
         <tags>
             
             <tag> 标签1 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>tomcat架构</title>
+      <link href="/2025/02/23/tomcat%E6%9E%B6%E6%9E%84%E8%AF%A6%E8%A7%A3/"/>
+      <url>/2025/02/23/tomcat%E6%9E%B6%E6%9E%84%E8%AF%A6%E8%A7%A3/</url>
+      
+        <content type="html"><![CDATA[<h2 id="Tomcat架构"><a href="#Tomcat架构" class="headerlink" title="Tomcat架构"></a>Tomcat架构</h2><p><img src="/./../img/ma/Snipaste_2025-02-18_17-06-58.png" alt="Snipaste_2025-02-18_17-06-58"></p><p>可以看到Tomcat Server大致可以分为三个组件，Service、Connector、Container</p><h3 id="service"><a href="#service" class="headerlink" title="service"></a>service</h3><p><strong>Service</strong> 是 Tomcat 的一个主要组件，负责组织和管理 <strong>Connector</strong> 和 <strong>Container</strong> 的工作。一个 <strong>Service</strong> 可以包含多个 <strong>Connector</strong> 和 <strong>Container</strong>。它的作用是将所有相关的资源和功能组合在一起，确保 Tomcat 在处理请求时能够高效地协同工作。</p><h3 id="Connector（连接器）"><a href="#Connector（连接器）" class="headerlink" title="Connector（连接器）"></a>Connector（连接器）</h3><p><strong>Connector</strong> 负责接收来自客户端（如浏览器）的请求，并将这些请求传递给 <strong>Container</strong> 进行处理。它处理网络协议（如 HTTP、HTTPS）和客户端与服务器之间的连接。</p><h3 id="Container（容器）"><a href="#Container（容器）" class="headerlink" title="Container（容器）"></a><strong>Container（容器）</strong></h3><p><strong>Container</strong> 是 Tomcat 的核心，负责实际处理 HTTP 请求的业务逻辑。包含四种子容器：<code>Engine</code>、<code>Host</code>、<code>Context</code>和<code>Wrapper</code>其中，一个Container对应一个Engine，一个Engine可以包含多个Host，一个Host可以包含多个Context，Context又包含多个Wrapper，各子容器的功能如下</p><h4 id="Engine"><a href="#Engine" class="headerlink" title="Engine"></a>Engine</h4><p><strong>Engine</strong> 是 <strong>Container</strong> 中的最顶层组件，负责处理所有的请求。它是 Tomcat 中的请求分发器，能够协调和管理所有的 <strong>Host</strong></p><h4 id="Host（主机）"><a href="#Host（主机）" class="headerlink" title="Host（主机）"></a>Host（主机）</h4><p><strong>Host</strong> 代表一个虚拟主机。一个 <strong>Host</strong> 通常对应一个域名或一个 IP 地址，它处理和管理特定的 Web 应用程序（通常对应于一个或多个网站）。每个 <strong>Host</strong> 可以包含多个 <strong>Context</strong>，每个 <strong>Context</strong> 对应一个 Web 应用。</p><h4 id="Context（上下文）"><a href="#Context（上下文）" class="headerlink" title="Context（上下文）"></a>Context（上下文）</h4><p><strong>Context</strong> 代表一个 Web 应用，是 Tomcat 中的一个应用级容器。一个 <strong>Context</strong> 通常对应一个单独的 Web 应用，它可以包含多个 Servlet、JSP 文件、HTML 页面等内容。同一个Host里面不同的Context，其contextPath必须不同，默认Context的contextPath为空格(“”)或斜杠(&#x2F;)</p><p>下面找一个Tomcat的文件目录对照一下，如下图所示：</p><p><img src="/./../img/ma/Snipaste_2025-02-18_17-28-29.png" alt="Snipaste_2025-02-18_17-28-29"></p><p>Context和Host的区别是Context表示一个应用，我们的Tomcat中默认的配置下webapps下的每一个文件夹目录都是一个Context，其中ROOT目录中存放着主应用，其他目录存放着子应用，而整个webapps就是一个Host站点。</p><h4 id="Wrapper（封装器）"><a href="#Wrapper（封装器）" class="headerlink" title="Wrapper（封装器）"></a>Wrapper（封装器）</h4><p><strong>Wrapper</strong> 是 <strong>Container</strong> 中的一个组件，一个<strong>Container</strong> 可以对应多个wrapper。它负责封装一个 <strong>Servlet</strong>。每个 <strong>Wrapper</strong> 对应一个 Servlet，它管理该 Servlet 的生命周期（初始化、请求处理、销毁）。<strong>Wrapper</strong> 是 <strong>Context</strong> 中的一个重要组成部分，它决定了 <strong>Servlet</strong> 如何在 Tomcat 中被加载和执行。</p><p>可以用一张图来表示请求在Container中的解析过程</p><p><img src="/./../img/ma/image-20250218181420354.png" alt="image-20250218181420354"></p><p>当访问 <code>https://manage.xxx.com:8080/user/list</code> 时，Tomcat 会按照以下流程处理请求：</p><ol><li><strong>请求接收：</strong> 客户端通过 HTTPS 协议向 Tomcat 的 8080 端口发送请求。</li><li><strong>Connector 处理：</strong> Tomcat 的 <code>Connector</code> 组件接收请求，并将其转换为内部的 <code>Request</code> 对象。</li><li><strong>Engine 路由：</strong> <code>Engine</code> 组件根据请求的主机名（<code>manage.xxx.com</code>）确定目标 <code>Host</code>。</li><li><strong>Host 路由：</strong> <code>Host</code> 组件根据请求的路径（<code>/user/list</code>）确定目标 <code>Context</code>。</li><li><strong>Context 路由：</strong> <code>Context</code> 组件根据请求的路径确定目标 <code>Wrapper</code>。</li><li><strong>Wrapper 调用 Servlet：</strong> <code>Wrapper</code> 调用其封装的 <code>Servlet</code> 的 <code>service()</code> 方法，处理请求并生成响应。</li><li><strong>响应返回：</strong> 生成的响应通过上述层次返回给客户端。</li></ol>]]></content>
+      
+      
+      <categories>
+          
+          <category> -代码审计 </category>
+          
+      </categories>
+      
+      
+        <tags>
+            
+            <tag> 标签2 </tag>
             
         </tags>
       
